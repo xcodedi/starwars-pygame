@@ -42,7 +42,7 @@ game_pause = pygame.mixer.Sound("assets/game-paused-darthvader.wav")
 death_sound = pygame.mixer.Sound("assets/kylo.mp3")
 
 # Load fonts
-font_menu = pygame.font.SysFont("comicsansms", 18)
+font_menu = pygame.font.SysFont("comicsansms", 30)
 font_death = pygame.font.SysFont("comicsansms", 30)
 
 # Background modification 
@@ -50,6 +50,39 @@ background_start = pygame.transform.scale(background_start, (size[0], size[1]))
 background_battle = pygame.transform.scale(background_battle, (size[0], size[1]))
 background_death = pygame.transform.scale(background_death, (size[0], size[1]))
 
+# Initial screen
+def start_screen():
+    while True:
+        screen.blit(background_start, (0, 0))
+        pygame.mixer.Sound.play(start_sound)
+
+
+        # Box "Star Wars"
+        start_rect = pygame.Rect(350, 400, 300, 60)
+        pygame.draw.rect(screen, (0, 0, 0), start_rect, border_radius=12)
+        start_text = font_menu.render("Start Game", True, (255, 255, 255))
+        screen.blit(start_text, (start_rect.x + 70, start_rect.y + 5))
+
+        # Box "Exit"
+        exit_rect = pygame.Rect(350, 480, 300, 60)
+        pygame.draw.rect(screen, (0, 0, 0), exit_rect, border_radius=12)
+        exit_text = font_menu.render("Exit Game", True, (255, 255, 255))
+        screen.blit(exit_text, (exit_rect.x + 80, exit_rect.y + 5))
+
+        pygame.display.update()
+
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                quit()
+            elif event.type == pygame.MOUSEBUTTONDOWN:
+                if start_rect.collidepoint(event.pos):
+                    return 
+                elif exit_rect.collidepoint(event.pos):
+                    pygame.quit()
+                    quit()
+
+# Function to ask for player name
 def jogar():
     window_width = 300
     window_height = 50
@@ -77,24 +110,28 @@ def jogar():
     button.pack()
     root.mainloop()
 
-# Define jedi size
+# Executa tela inicial
+start_screen()
+jogar()
+
+# Set jedi size
 jedi_original = pygame.image.load("assets/jedi.png")
 jedi_width = 125  
 jedi_height = 200
 jedi = pygame.transform.scale(jedi_original, (jedi_width, jedi_height))
 
-# Define jedi position
+# Set jedi position
 position_jedi_X = (size[0] // 2) - (jedi_width // 2)
 position_jedi_Y = size[1] - jedi_height - 20
 movement_jedi_X = 0
 
-# Define villain size
+# Set villain size
 villain_original = pygame.image.load("assets/ship-ti.png")
 villain_width = 200
 villain_height = 300
 villain = pygame.transform.scale(villain_original, (villain_width, villain_height))
 
-# Define villain position (topo)
+# Set villain position
 position_villain_X = (size[0] // 2) - (villain_width // 2)
 position_villain_Y = -60
 movement_villain_X = 0
@@ -114,6 +151,7 @@ position_shield_Y = position_jedi_Y - 50
 
 score = 0
 
+# Loop principal do jogo
 while True:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
@@ -128,21 +166,18 @@ while True:
             if event.key == pygame.K_RIGHT or event.key == pygame.K_LEFT:
                 movement_jedi_X = 0
 
-    # Atualiza posição jedi 
     position_jedi_X += movement_jedi_X
 
-    # Restrições de movimento
     if position_jedi_X > 895:
         position_jedi_X = 895
     elif position_jedi_X < -5:
         position_jedi_X = -5
 
-    # Desenha tela
     screen.fill(white)
     screen.blit(background_battle, (0, 0))
     screen.blit(death_star, (0, 400))
     screen.blit(jedi, (position_jedi_X, position_jedi_Y))
-    screen.blit(villain, (position_villain_X, position_villain_Y))  # Vilão no centro da tela
+    screen.blit(villain, (position_villain_X, position_villain_Y))
 
     pygame.display.update()
     clock.tick(60)
