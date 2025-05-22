@@ -44,6 +44,7 @@ death_sound = pygame.mixer.Sound("assets/kylo.mp3")
 # Load fonts
 font_menu = pygame.font.SysFont("comicsansms", 30)
 font_death = pygame.font.SysFont("comicsansms", 30)
+font_intructions = pygame.font.SysFont("arial", 30)
 
 # Background modification 
 background_start = pygame.transform.scale(background_start, (size[0], size[1]))
@@ -117,17 +118,16 @@ def show_instructions():
         screen.blit(background_start, (0, 0))  
 
         instructions = [
-            "Use as setas para mover:",
-            "↑ - Cima",
-            "↓ - Baixo",
-            "← - Esquerda",
-            "→ - Direita",
-            "Pressione qualquer tecla para continuar..."
+            f"Welcome little Padawan, {player_name}!",
+            "Press this buttons to move:",
+            "← = Left",
+            "→ = Right",
+            "Press any key to start the game.",
         ]
 
         for i, line in enumerate(instructions):
-            text = font_menu.render(line, True, (255, 255, 255))
-            screen.blit(text, (100, 100 + i * 40))
+            text = font_intructions.render(line, True, (255, 255, 255))
+            screen.blit(text, (50, 300 + i * 40))
 
         pygame.display.update()
 
