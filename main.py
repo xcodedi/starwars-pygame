@@ -50,39 +50,7 @@ background_start = pygame.transform.scale(background_start, (size[0], size[1]))
 background_battle = pygame.transform.scale(background_battle, (size[0], size[1]))
 background_death = pygame.transform.scale(background_death, (size[0], size[1]))
 
-# Initial screen
-def start_screen():
-    while True:
-        screen.blit(background_start, (0, 0))
-        pygame.mixer.Sound.play(start_sound)
-
-
-        # Box "Star Wars"
-        start_rect = pygame.Rect(350, 400, 300, 60)
-        pygame.draw.rect(screen, (0, 0, 0), start_rect, border_radius=12)
-        start_text = font_menu.render("Start Game", True, (255, 255, 255))
-        screen.blit(start_text, (start_rect.x + 70, start_rect.y + 5))
-
-        # Box "Exit"
-        exit_rect = pygame.Rect(350, 480, 300, 60)
-        pygame.draw.rect(screen, (0, 0, 0), exit_rect, border_radius=12)
-        exit_text = font_menu.render("Exit Game", True, (255, 255, 255))
-        screen.blit(exit_text, (exit_rect.x + 80, exit_rect.y + 5))
-
-        pygame.display.update()
-
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                pygame.quit()
-                quit()
-            elif event.type == pygame.MOUSEBUTTONDOWN:
-                if start_rect.collidepoint(event.pos):
-                    return 
-                elif exit_rect.collidepoint(event.pos):
-                    pygame.quit()
-                    quit()
-
-# Function to ask for player name
+# set name of player 
 def jogar():
     window_width = 300
     window_height = 50
@@ -110,9 +78,68 @@ def jogar():
     button.pack()
     root.mainloop()
 
-# Executa tela inicial
-start_screen()
-jogar()
+# Initial screen
+def start_screen():
+    while True:
+        screen.blit(background_start, (0, 0))
+        pygame.mixer.Sound.play(start_sound)
+
+        # Box "Start Game"
+        start_rect = pygame.Rect(90, 250, 300, 60)
+        pygame.draw.rect(screen, (0, 255, 255), start_rect, border_radius=12)
+        start_text = font_menu.render("Start Game", True, (255, 255, 255))
+        screen.blit(start_text, (start_rect.x + 70, start_rect.y + 5))
+
+        # Box "Exit"
+        exit_rect = pygame.Rect(90, 350, 300, 60)
+        pygame.draw.rect(screen, (0, 0, 0), exit_rect, border_radius=12)
+        exit_text = font_menu.render("Exit Game", True, (255, 255, 255))
+        screen.blit(exit_text, (exit_rect.x + 80, exit_rect.y + 5))
+
+        pygame.display.update()
+
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                quit()
+            elif event.type == pygame.MOUSEBUTTONDOWN:
+                if start_rect.collidepoint(event.pos):
+                    jogar()             
+                    show_instructions() 
+                    return              
+                elif exit_rect.collidepoint(event.pos):
+                    pygame.quit()
+                    quit()
+
+# Instructions screen
+def show_instructions():
+    while True:
+        screen.blit(background_start, (0, 0))  
+
+        instructions = [
+            "Use as setas para mover:",
+            "↑ - Cima",
+            "↓ - Baixo",
+            "← - Esquerda",
+            "→ - Direita",
+            "Pressione qualquer tecla para continuar..."
+        ]
+
+        for i, line in enumerate(instructions):
+            text = font_menu.render(line, True, (255, 255, 255))
+            screen.blit(text, (100, 100 + i * 40))
+
+        pygame.display.update()
+
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                quit()
+            elif event.type == pygame.KEYDOWN:
+                return 
+
+
+start_screen() 
 
 # Set jedi size
 jedi_original = pygame.image.load("assets/jedi.png")
