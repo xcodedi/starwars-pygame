@@ -51,6 +51,7 @@ background_start = pygame.transform.scale(background_start, (size[0], size[1]))
 background_battle = pygame.transform.scale(background_battle, (size[0], size[1]))
 background_death = pygame.transform.scale(background_death, (size[0], size[1]))
 
+
 # set name of player 
 def jogar():
     window_width = 300
@@ -122,7 +123,7 @@ def show_instructions():
             "Press this buttons to move:",
             "← = Left",
             "→ = Right",
-            "Press any key to start the game.",
+            "Press space bar to start the game.",
         ]
 
         for i, line in enumerate(instructions):
@@ -136,16 +137,31 @@ def show_instructions():
                 pygame.quit()
                 quit()
             elif event.type == pygame.KEYDOWN:
+             if event.key == pygame.K_SPACE:
                 return 
 
 
 start_screen() 
 
+# Set death star size (max)
+death_star_width = 150
+death_star_height = 100
+death_star = pygame.transform.scale(death_star, (death_star_width, death_star_height))
+
+# Death star animation scale
+death_star_scale = 1.0
+scale_direction = -0.005
+death_star_min_scale = 0.8
+death_star_max_scale = 1.0
+
+# Set death star position
+position_death_star_X = 860
+position_death_star_Y = 5
+
 # Set jedi size
-jedi_original = pygame.image.load("assets/jedi.png")
 jedi_width = 125  
 jedi_height = 200
-jedi = pygame.transform.scale(jedi_original, (jedi_width, jedi_height))
+jedi = pygame.transform.scale(jedi, (jedi_width, jedi_height))
 
 # Set jedi position
 position_jedi_X = (size[0] // 2) - (jedi_width // 2)
@@ -153,10 +169,9 @@ position_jedi_Y = size[1] - jedi_height - 20
 movement_jedi_X = 0
 
 # Set villain size
-villain_original = pygame.image.load("assets/ship-ti.png")
 villain_width = 200
 villain_height = 300
-villain = pygame.transform.scale(villain_original, (villain_width, villain_height))
+villain = pygame.transform.scale(villain, (villain_width, villain_height))
 
 # Set villain position
 position_villain_X = (size[0] // 2) - (villain_width // 2)
@@ -200,9 +215,23 @@ while True:
     elif position_jedi_X < -5:
         position_jedi_X = -5
 
-    screen.fill(white)
+    # Atualiza escala da Death Star
+    death_star_scale += scale_direction
+    if death_star_scale <= death_star_min_scale or death_star_scale >= death_star_max_scale:
+        scale_direction *= -1  
+
+    current_width = int(death_star_width * death_star_scale)
+    current_height = int(death_star_height * death_star_scale)
+    scaled_death_star = pygame.transform.scale(death_star, (current_width, current_height))
+
+
+    # Corrige posição para centralizar a Death Star ao escalar
+    offset_x = (death_star_width - current_width) // 2
+    offset_y = (death_star_height - current_height) // 2
+
+    #screen.fill(white) (precisa?)
     screen.blit(background_battle, (0, 0))
-    screen.blit(death_star, (0, 400))
+    screen.blit(scaled_death_star, (position_death_star_X + offset_x, position_death_star_Y + offset_y))
     screen.blit(jedi, (position_jedi_X, position_jedi_Y))
     screen.blit(villain, (position_villain_X, position_villain_Y))
 
