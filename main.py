@@ -179,9 +179,14 @@ position_villain_Y = -60
 movement_villain_X = 0
 movement_villain_Y = 0
 
+#Define laser size
+laser_width = 10
+laser_height = 130
+laser = pygame.transform.scale(laser, (laser_width, laser_height))
+
 # Define laser position  
-position_laser_X = position_villain_X + 20
-position_laser_Y = position_villain_Y - 50
+position_laser_X = 400
+position_laser_Y = 400
 
 # Define random animation position 
 position_random_animation_X = 800
@@ -234,6 +239,7 @@ while True:
     screen.blit(scaled_death_star, (position_death_star_X + offset_x, position_death_star_Y + offset_y))
     screen.blit(jedi, (position_jedi_X, position_jedi_Y))
     screen.blit(villain, (position_villain_X, position_villain_Y))
+    screen.blit(laser, (position_laser_X, position_laser_Y))
 
     pygame.display.update()
     clock.tick(60)
