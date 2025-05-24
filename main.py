@@ -177,7 +177,9 @@ villain = pygame.transform.scale(villain, (villain_width, villain_height))
 position_villain_X = (size[0] // 2) - (villain_width // 2)
 position_villain_Y = -60
 movement_villain_X = 0
-movement_villain_Y = 0
+
+# Set villain speed
+villain_speed = 7
 
 #Define laser size
 laser_width = 10
@@ -213,12 +215,6 @@ while True:
             if event.key == pygame.K_RIGHT or event.key == pygame.K_LEFT:
                 movement_jedi_X = 0
 
-    position_jedi_X += movement_jedi_X
-
-    if position_jedi_X > 895:
-        position_jedi_X = 895
-    elif position_jedi_X < -5:
-        position_jedi_X = -5
 
     # Atualiza escala da Death Star
     death_star_scale += scale_direction
@@ -233,6 +229,19 @@ while True:
     # Corrige posição para centralizar a Death Star ao escalar
     offset_x = (death_star_width - current_width) // 2
     offset_y = (death_star_height - current_height) // 2
+
+    # Atualiza a posição do jedi
+    position_jedi_X += movement_jedi_X
+
+    if position_jedi_X > 895:
+        position_jedi_X = 895
+    elif position_jedi_X < -5:
+        position_jedi_X = -5
+
+    # Atualiza a posição do vilão
+    position_villain_X += villain_speed
+    if position_villain_X <= 0 or position_villain_X + villain_width >= size[0]:
+     villain_speed *= -1
 
     #screen.fill(white) (precisa?)
     screen.blit(background_battle, (0, 0))
