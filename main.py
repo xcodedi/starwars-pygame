@@ -82,10 +82,9 @@ def jogar():
 
 # Initial screen
 def start_screen():
+    pygame.mixer.Sound.play(start_sound)
     while True:
-        screen.blit(background_start, (0, 0))
-        pygame.mixer.Sound.play(start_sound)
-
+        screen.blit(background_start, (0, 0)) 
         # Box "Start Game"
         start_rect = pygame.Rect(90, 250, 300, 60)
         pygame.draw.rect(screen, (0, 255, 255), start_rect, border_radius=12)
@@ -140,9 +139,9 @@ def show_instructions():
              if event.key == pygame.K_SPACE:
                 return 
 
-
 start_screen() 
-
+pygame.mixer.stop()
+pygame.mixer.Sound.play(battle_sound, loops=-1)
 # Set death star size (max)
 death_star_width = 150
 death_star_height = 100
@@ -180,6 +179,9 @@ movement_villain_X = 0
 
 # Set villain speed
 villain_speed = 7
+
+# Random villain movement
+villain_direction_change_timer = 0
 
 #Define laser size
 laser_width = 10
@@ -238,12 +240,22 @@ while True:
     elif position_jedi_X < -5:
         position_jedi_X = -5
 
-    # Atualiza a posição do vilão
+    # Random villain movement
+    villain_direction_change_timer += 1
+    if villain_direction_change_timer > 60:
+     villain_speed = random.choice([-7, -5, -3, 3, 5, 7])
+     villain_direction_change_timer = 0
+
     position_villain_X += villain_speed
-    if position_villain_X <= 0 or position_villain_X + villain_width >= size[0]:
+
+    # Keep the villain on screen
+    if position_villain_X < 0:
+     position_villain_X = 0
+     villain_speed *= -1
+    elif position_villain_X + villain_width > size[0]:
+     position_villain_X = size[0] - villain_width
      villain_speed *= -1
 
-    #screen.fill(white) (precisa?)
     screen.blit(background_battle, (0, 0))
     screen.blit(scaled_death_star, (position_death_star_X + offset_x, position_death_star_Y + offset_y))
     screen.blit(jedi, (position_jedi_X, position_jedi_Y))
