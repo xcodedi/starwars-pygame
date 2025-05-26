@@ -183,26 +183,31 @@ villain_speed = 7
 # Random villain movement
 villain_direction_change_timer = 0
 
-#Define laser size
+# Set laser size
 laser_width = 10
 laser_height = 130
 laser = pygame.transform.scale(laser, (laser_width, laser_height))
 
-# Define laser position  
-position_laser_X = 400
-position_laser_Y = 400
+# Set laser position  
+position_laser_X = position_villain_X
+position_laser_Y = position_villain_Y
 
-# Define random animation position 
+# set laser feature
+laser_villain = []
+last_shot_time = pygame.time.get_ticks()
+laser_speed = 10
+
+# Set random animation position 
 position_random_animation_X = 800
 position_random_animation_Y = 0
 
-# Define shield position
+# Set shield position
 position_shield_X = position_jedi_X + 20
 position_shield_Y = position_jedi_Y - 50
 
 score = 0
 
-# Loop principal do jogo
+# Main game loop
 while True:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
@@ -218,7 +223,7 @@ while True:
                 movement_jedi_X = 0
 
 
-    # Atualiza escala da Death Star
+    # Updates Death Star scale
     death_star_scale += scale_direction
     if death_star_scale <= death_star_min_scale or death_star_scale >= death_star_max_scale:
         scale_direction *= -1  
@@ -228,11 +233,11 @@ while True:
     scaled_death_star = pygame.transform.scale(death_star, (current_width, current_height))
 
 
-    # Corrige posição para centralizar a Death Star ao escalar
+    # Fix position to center the Death Star when scaling
     offset_x = (death_star_width - current_width) // 2
     offset_y = (death_star_height - current_height) // 2
 
-    # Atualiza a posição do jedi
+    # Updates Jedi position
     position_jedi_X += movement_jedi_X
 
     if position_jedi_X > 895:
@@ -243,7 +248,7 @@ while True:
     # Random villain movement
     villain_direction_change_timer += 1
     if villain_direction_change_timer > 60:
-     villain_speed = random.choice([-7, -5, -3, 3, 5, 7])
+     villain_speed = random.choice([-20, -10, -5, 5, 10, 20])
      villain_direction_change_timer = 0
 
     position_villain_X += villain_speed
@@ -256,11 +261,27 @@ while True:
      position_villain_X = size[0] - villain_width
      villain_speed *= -1
 
+    # verif if  1,5 seconds have passed to shoot again 
+    current_time = pygame.time.get_ticks()
+    if current_time - last_shot_time > 1500:
+     position_laser_X = position_villain_X + villain_width // 2 - laser_width // 2
+     position_laser_Y = position_villain_Y + villain_height -100
+     laser_villain.append([position_laser_X, position_laser_Y])
+     pygame.mixer.Sound.play(laser_sound)
+     last_shot_time = current_time 
+
     screen.blit(background_battle, (0, 0))
     screen.blit(scaled_death_star, (position_death_star_X + offset_x, position_death_star_Y + offset_y))
     screen.blit(jedi, (position_jedi_X, position_jedi_Y))
     screen.blit(villain, (position_villain_X, position_villain_Y))
-    screen.blit(laser, (position_laser_X, position_laser_Y))
+
+    # draw laser 
+    for laser_pos in laser_villain[:]:
+        laser_pos[1] += laser_speed
+        if laser_pos[1] > size[1]:
+            laser_villain.remove(laser_pos)
+        else:
+            screen.blit(laser, (laser_pos[0], laser_pos[1]))
 
     pygame.display.update()
     clock.tick(60)
