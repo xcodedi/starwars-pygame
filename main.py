@@ -1,7 +1,8 @@
 import pygame
 import random
-import os
+import math
 import tkinter as tk
+import os
 from resources.functions import start_database
 from tkinter import messagebox
 
@@ -45,6 +46,7 @@ death_sound = pygame.mixer.Sound("assets/kylo.mp3")
 font_menu = pygame.font.SysFont("comicsansms", 30)
 font_death = pygame.font.SysFont("comicsansms", 30)
 font_intructions = pygame.font.SysFont("arial", 30)
+font_score = pygame.font.SysFont("comicsansms", 36)
 
 # Background modification 
 background_start = pygame.transform.scale(background_start, (size[0], size[1]))
@@ -138,6 +140,42 @@ def show_instructions():
             elif event.type == pygame.KEYDOWN:
              if event.key == pygame.K_SPACE:
                 return 
+             
+def check_collision(laser_pos, jedi_rect):
+    laser_rect = pygame.Rect(laser_pos[0], laser_pos[1], laser_width, laser_height)
+    return laser_rect.colliderect(jedi_rect)
+
+def show_death_screen():
+    pygame.mixer.Sound.play(death_sound)
+    screen.blit(background_death, (0, 0))
+    
+    # Texto de Game Over
+    death_text = font_death.render("GAME OVER", True, (255, 0, 0))
+    screen.blit(death_text, (size[0]//2 - death_text.get_width()//2, 200))
+    
+    # Pontuação
+    score_text = font_score.render(f"Score: {score}", True, (255, 255, 255))
+    screen.blit(score_text, (size[0]//2 - score_text.get_width()//2, 300))
+    
+    # Botão de Tentar Novamente
+    retry_rect = pygame.Rect(size[0]//2 - 100, 400, 200, 50)
+    pygame.draw.rect(screen, (0, 255, 0), retry_rect, border_radius=10)
+    retry_text = font_menu.render("Try Again", True, (0, 0, 0))
+    screen.blit(retry_text, (retry_rect.x + 50, retry_rect.y + 15))
+    
+    pygame.display.update()
+    
+    waiting = True
+    while waiting:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                quit()
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                if retry_rect.collidepoint(event.pos):
+                    waiting = False
+                    return True
+    return False
 
 start_screen() 
 pygame.mixer.stop()
@@ -195,7 +233,7 @@ position_laser_Y = position_villain_Y
 # set laser feature
 laser_villain = []
 last_shot_time = pygame.time.get_ticks()
-laser_speed = 10
+laser_speed = 15
 
 # Set random animation position 
 position_random_animation_X = 800
@@ -222,7 +260,6 @@ while True:
             if event.key == pygame.K_RIGHT or event.key == pygame.K_LEFT:
                 movement_jedi_X = 0
 
-
     # Updates Death Star scale
     death_star_scale += scale_direction
     if death_star_scale <= death_star_min_scale or death_star_scale >= death_star_max_scale:
@@ -231,7 +268,6 @@ while True:
     current_width = int(death_star_width * death_star_scale)
     current_height = int(death_star_height * death_star_scale)
     scaled_death_star = pygame.transform.scale(death_star, (current_width, current_height))
-
 
     # Fix position to center the Death Star when scaling
     offset_x = (death_star_width - current_width) // 2
@@ -248,40 +284,61 @@ while True:
     # Random villain movement
     villain_direction_change_timer += 1
     if villain_direction_change_timer > 60:
-     villain_speed = random.choice([-20, -10, -5, 5, 10, 20])
-     villain_direction_change_timer = 0
+        villain_speed = random.choice([-15, -10, -5, 5, 10, 15])
+        villain_direction_change_timer = 0
 
     position_villain_X += villain_speed
 
     # Keep the villain on screen
     if position_villain_X < 0:
-     position_villain_X = 0
-     villain_speed *= -1
+        position_villain_X = 0
+        villain_speed *= -1
     elif position_villain_X + villain_width > size[0]:
-     position_villain_X = size[0] - villain_width
-     villain_speed *= -1
+        position_villain_X = size[0] - villain_width
+        villain_speed *= -1
 
-    # verif if  1,5 seconds have passed to shoot again 
+    # verif if 1,5 seconds have passed to shoot again 
     current_time = pygame.time.get_ticks()
     if current_time - last_shot_time > 1500:
-     position_laser_X = position_villain_X + villain_width // 2 - laser_width // 2
-     position_laser_Y = position_villain_Y + villain_height -100
-     laser_villain.append([position_laser_X, position_laser_Y])
-     pygame.mixer.Sound.play(laser_sound)
-     last_shot_time = current_time 
+        position_laser_X = position_villain_X + villain_width // 2 - laser_width // 2
+        position_laser_Y = position_villain_Y + villain_height - 100
+        angle = random.uniform(-0.5, 0.5)  # em radianos, ~ -28° a +28°
+        dx = laser_speed * math.sin(angle)
+        dy = laser_speed * math.cos(angle)
+        laser_villain.append([position_laser_X, position_laser_Y, dx, dy])
+        pygame.mixer.Sound.play(laser_sound)
+        last_shot_time = current_time 
 
     screen.blit(background_battle, (0, 0))
     screen.blit(scaled_death_star, (position_death_star_X + offset_x, position_death_star_Y + offset_y))
     screen.blit(jedi, (position_jedi_X, position_jedi_Y))
     screen.blit(villain, (position_villain_X, position_villain_Y))
 
-    # draw laser 
+    # Create jedi_rect for collision detection
+    jedi_rect = pygame.Rect(position_jedi_X, position_jedi_Y, jedi_width, jedi_height)
+
+    # Update and draw lasers
     for laser_pos in laser_villain[:]:
-        laser_pos[1] += laser_speed
+        laser_pos[0] += laser_pos[2]  
+        laser_pos[1] += laser_pos[3] 
+        screen.blit(laser, (laser_pos[0], laser_pos[1]))
+
+        # Check collision
+        if check_collision(laser_pos, jedi_rect):
+            pygame.mixer.stop()
+            if show_death_screen():
+                position_jedi_X = (size[0] // 2) - (jedi_width // 2)
+                position_villain_X = (size[0] // 2) - (villain_width // 2)
+                laser_villain = []
+                score = 0
+                pygame.mixer.Sound.play(battle_sound, loops=-1)
+                break 
+            else:
+                pygame.quit()
+                quit()
         if laser_pos[1] > size[1]:
             laser_villain.remove(laser_pos)
-        else:
-            screen.blit(laser, (laser_pos[0], laser_pos[1]))
+            score += 1  
 
     pygame.display.update()
     clock.tick(60)
