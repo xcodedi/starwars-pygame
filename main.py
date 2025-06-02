@@ -180,11 +180,11 @@ def show_death_screen():
     while waiting:
         screen.blit(background_death, (0, 0))
         
-        # Render "GAME OVER" text with black border (simulated)
+        # Render "GAME OVER" text with black border 
         death_text = font_death.render("GAME OVER", True, (255, 10, 0))
         text_rect = death_text.get_rect(center=(size[0]//2, 250))
         
-        # Draw black outline (render multiple times with small offsets)
+        # Draw black outline 
         for offset in [(-1,-1), (1,-1), (-1,1), (1,1)]:
             screen.blit(font_death.render("GAME OVER", True, black), 
                        (text_rect.x + offset[0], text_rect.y + offset[1]))
@@ -252,7 +252,7 @@ laser_width = 10
 laser_height = 130
 laser = pygame.transform.scale(laser, (laser_width, laser_height))
 laser_villain = []
-last_shot_time = pygame.time.get_ticks()
+last_shot_time = pygame.time.get_ticks() + 3000
 laser_speed = 15
 
 position_random_animation_X = 800
@@ -366,6 +366,7 @@ while running:
                 position_villain_X = (size[0] // 2) - (villain_width // 2)
                 laser_villain = []
                 score = 0
+                last_shot_time = pygame.time.get_ticks() + 3000
                 pygame.mixer.Sound.play(battle_sound, loops=-1)
             else:
                 running = False
