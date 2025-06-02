@@ -64,6 +64,7 @@ try:
     font_death = pygame.font.SysFont("comicsansms", 40)
     font_intructions = pygame.font.SysFont("arial", 30)
     font_score = pygame.font.SysFont("comicsansms", 36)
+    font_pause_mensage = pygame.font.SysFont("comicsansms", 13)
 except:
     print("Could not load fonts")
 
@@ -110,7 +111,7 @@ def jogar():
 
 # Initial screen
 def start_screen():
-    pygame.mixer.Sound.play(start_sound)
+    pygame.mixer.Sound.play(start_sound,loops=-1)
     while True:
         screen.blit(background_start, (0, 0)) 
         
@@ -252,7 +253,6 @@ laser_width = 10
 laser_height = 130
 laser = pygame.transform.scale(laser, (laser_width, laser_height))
 laser_villain = []
-last_shot_time = pygame.time.get_ticks() + 3000
 laser_speed = 15
 
 position_random_animation_X = 800
@@ -265,6 +265,8 @@ position_shield_Y = position_jedi_Y - 50
 start_screen() 
 pygame.mixer.stop()
 pygame.mixer.Sound.play(battle_sound, loops=-1)
+
+last_shot_time = pygame.time.get_ticks() + 3000  
 
 # Main game loop
 running = True
@@ -380,6 +382,9 @@ while running:
     # Display score
     score_text = font_score.render(f"Score: {score}", True, white)
     screen.blit(score_text, (10, 10))
+    #Display pause message
+    pause_mensage = font_pause_mensage.render("Press SPACE to pause GAME", True, (128, 128, 128))
+    screen.blit(pause_mensage, (10, 50))
 
     pygame.display.update()
     clock.tick(60)
