@@ -61,7 +61,7 @@ except:
 # Load fonts
 try:
     font_menu = pygame.font.SysFont("comicsansms", 30)
-    font_death = pygame.font.SysFont("comicsansms", 30)
+    font_death = pygame.font.SysFont("comicsansms", 40)
     font_intructions = pygame.font.SysFont("arial", 30)
     font_score = pygame.font.SysFont("comicsansms", 36)
 except:
@@ -180,16 +180,31 @@ def show_death_screen():
     while waiting:
         screen.blit(background_death, (0, 0))
         
-        death_text = font_death.render("GAME OVER", True, (255, 0, 0))
-        screen.blit(death_text, (size[0]//2 - death_text.get_width()//2, 200))
+        # Render "GAME OVER" text with black border (simulated)
+        death_text = font_death.render("GAME OVER", True, (255, 10, 0))
+        text_rect = death_text.get_rect(center=(size[0]//2, 250))
         
+        # Draw black outline (render multiple times with small offsets)
+        for offset in [(-1,-1), (1,-1), (-1,1), (1,1)]:
+            screen.blit(font_death.render("GAME OVER", True, black), 
+                       (text_rect.x + offset[0], text_rect.y + offset[1]))
+        
+        screen.blit(death_text, text_rect)
+        
+        # Score text
         score_text = font_score.render(f"Score: {score}", True, white)
         screen.blit(score_text, (size[0]//2 - score_text.get_width()//2, 300))
         
+        # Retry button with border
         retry_rect = pygame.Rect(size[0]//2 - 100, 400, 200, 50)
-        pygame.draw.rect(screen, (0, 255, 0), retry_rect, border_radius=10)
-        retry_text = font_menu.render("Try Again", True, black)
-        screen.blit(retry_text, (retry_rect.x + 50, retry_rect.y + 15))
+        
+        # Draw border 
+        pygame.draw.rect(screen, black, retry_rect.inflate(10, 10), border_radius=15)
+        # Draw main button
+        pygame.draw.rect(screen, (0, 255, 255), retry_rect, border_radius=10)
+        
+        retry_text = font_menu.render("TRY AGAIN", True, white)
+        screen.blit(retry_text, (retry_rect.x + 18, retry_rect.y + 5))
         
         pygame.display.update()
         
