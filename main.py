@@ -6,6 +6,7 @@ import os
 from resources.functions import start_database
 from tkinter import messagebox
 
+pygame.mixer.pre_init(44100, -16, 2, 512)
 pygame.init()
 start_database()
 
@@ -53,8 +54,9 @@ try:
     battle_sound = pygame.mixer.Sound("assets/starwars-style.mp3")
     laser_sound = pygame.mixer.Sound("assets/shot-ship.mp3")
     shield_sound = pygame.mixer.Sound("assets/shield.mp3")
-    game_pause = pygame.mixer.Sound("assets/game-paused-darthvader.wav")
+    game_pause_sound = pygame.mixer.Sound("assets/game-paused-darthvader.wav")
     death_sound = pygame.mixer.Sound("assets/kylo.mp3")
+    x_wing_sound = pygame.mixer.Sound("assets/x-wings-fly.mp3")
 except:
     print("Could not load some sounds")
 
@@ -257,7 +259,9 @@ laser_speed = 15
 
 position_random_animation_X = 800
 position_random_animation_Y = 0
-
+x_wing_randon = []
+x_wing_speed = 5 
+next_xwing_time = pygame.time.get_ticks() + 10000
 position_shield_X = position_jedi_X + 20
 position_shield_Y = position_jedi_Y - 50
 
@@ -285,9 +289,9 @@ while running:
                 paused = not paused
                 if paused:
                     pygame.mixer.Sound.stop(battle_sound)
-                    pygame.mixer.Sound.play(game_pause)
+                    pygame.mixer.Sound.play(game_pause_sound)
                 else:
-                    pygame.mixer.Sound.stop(game_pause)
+                    pygame.mixer.Sound.stop(game_pause_sound)
                     pygame.mixer.Sound.play(battle_sound, loops=-1)        
         if event.type == pygame.KEYUP:
             if event.key == pygame.K_RIGHT and movement_jedi_X > 0:
@@ -386,6 +390,48 @@ while running:
     pause_mensage = font_pause_mensage.render("Press SPACE to pause GAME", True, (128, 128, 128))
     screen.blit(pause_mensage, (10, 50))
 
+    # X-Wing animation - aparece no canto inferior esquerdo e vai para o superior direito
+    current_time = pygame.time.get_ticks()
+    if current_time >= next_xwing_time:
+        # Define posição inicial no canto inferior esquerdo
+        start_x = -100
+        start_y = size[1] - 50
+        
+        # Calculate direction to the target position
+        target_x = size[0] + 100
+        target_y = -100
+        distance_x = target_x - start_x
+        distance_y = target_y - start_y
+        distance = math.sqrt(distance_x**2 + distance_y**2)
+        speed = 5
+        dx = (distance_x / distance) * speed
+        dy = (distance_y / distance) * speed
+
+        # Create X-Wing image
+        xwing_img = pygame.transform.scale(random_animation, (100, 100)).convert_alpha()
+        xwing_img.set_alpha(110) 
+
+        x_wing_randon.append({
+            'x': start_x,
+            'y': start_y,
+            'dx': dx,
+            'dy': dy,
+            'image': xwing_img
+        })
+        pygame.mixer.Sound.play(x_wing_sound)  
+        next_xwing_time = current_time + random.randint(5000, 15000)
+
+    # Draw X-Wing animations
+    for xwing in x_wing_randon[:]:
+        xwing['x'] += xwing['dx']
+        xwing['y'] += xwing['dy']
+        screen.blit(xwing['image'], (xwing['x'], xwing['y']))
+        
+
+        if xwing['x'] > size[0] + 50 or xwing['y'] < -150:
+            x_wing_randon.remove(xwing)
+
+    
     pygame.display.update()
     clock.tick(60)
 
