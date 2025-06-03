@@ -2,11 +2,10 @@ import pygame
 import random
 import math
 import tkinter as tk
-import os
-from resources.functions import start_database
+from resources.functions import start_database,save_game_log,get_top_scores
 from tkinter import messagebox
 
-pygame.mixer.pre_init(44100, -16, 2, 512)
+pygame.mixer.pre_init(44100, -16, 2, 512) 
 pygame.init()
 start_database()
 
@@ -179,15 +178,19 @@ def check_collision(laser_pos, jedi_rect):
 def show_death_screen():
     pygame.mixer.Sound.play(death_sound)
     
+    save_game_log(player_name, score)
+    
+    top_scores = get_top_scores(5)
+    
     waiting = True
     while waiting:
         screen.blit(background_death, (0, 0))
-        
-        # Render "GAME OVER" text with black border 
+       
+        # Render "GAME OVER" text
         death_text = font_death.render("GAME OVER", True, (255, 10, 0))
-        text_rect = death_text.get_rect(center=(size[0]//2, 250))
+        text_rect = death_text.get_rect(center=(size[0]//2, 150))
         
-        # Draw black outline 
+        # Draw black outline
         for offset in [(-1,-1), (1,-1), (-1,1), (1,1)]:
             screen.blit(font_death.render("GAME OVER", True, black), 
                        (text_rect.x + offset[0], text_rect.y + offset[1]))
@@ -195,17 +198,32 @@ def show_death_screen():
         screen.blit(death_text, text_rect)
         
         # Score text
-        score_text = font_score.render(f"Score: {score}", True, white)
-        screen.blit(score_text, (size[0]//2 - score_text.get_width()//2, 300))
+        score_text = font_score.render(f"Player: {player_name} - Score: {score}", True, white)
+        screen.blit(score_text, (size[0]//2 - score_text.get_width()//2, 180))
         
-        # Retry button with border
-        retry_rect = pygame.Rect(size[0]//2 - 100, 400, 200, 50)
+        # Render top scores
+        rank_title = font_menu.render("TOP 5 SCORES", True, (0, 255, 255))
+        screen.blit(rank_title, (size[0]//2 - rank_title.get_width()//2, 250))
         
-        # Draw border 
+        for i, game in enumerate(top_scores):
+            name, scr, date, time = game
+            # Convert score to string for rendering
+            if i == 0:
+                color = (255, 215, 0)  # GOLD
+            elif i == 1:
+                color = (white)  # SILVER (white better for visibility)
+            elif i == 2:
+                color = (205, 127, 50)  # BRONZE
+            else:
+                color = (192, 192, 192)
+            
+            game_text = font_intructions.render(f"{i+1}. {name}: {scr} - {date} {time}", True, color)
+            screen.blit(game_text, (size[0]//2 - game_text.get_width()//2, 300 + i * 35))
+        
+        # Retry button
+        retry_rect = pygame.Rect(size[0]//2 - 100, 510, 200, 50)
         pygame.draw.rect(screen, black, retry_rect.inflate(10, 10), border_radius=15)
-        # Draw main button
         pygame.draw.rect(screen, (0, 255, 255), retry_rect, border_radius=10)
-        
         retry_text = font_menu.render("TRY AGAIN", True, white)
         screen.blit(retry_text, (retry_rect.x + 18, retry_rect.y + 5))
         
@@ -223,6 +241,7 @@ def show_death_screen():
                     return False
 
     return False
+
 
 # Initialize game objects
 death_star_width = 150
@@ -390,14 +409,14 @@ while running:
     pause_mensage = font_pause_mensage.render("Press SPACE to pause GAME", True, (128, 128, 128))
     screen.blit(pause_mensage, (10, 50))
 
-    # X-Wing animation - aparece no canto inferior esquerdo e vai para o superior direito
+    # X-Wing animation - appears randomly
     current_time = pygame.time.get_ticks()
     if current_time >= next_xwing_time:
-        # Define posição inicial no canto inferior esquerdo
+        # Randomly generate starting position for X-Wing
         start_x = -100
         start_y = size[1] - 50
         
-        # Calculate direction to the target position
+        # Calculate direction to target position
         target_x = size[0] + 100
         target_y = -100
         distance_x = target_x - start_x
