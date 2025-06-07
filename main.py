@@ -1,8 +1,9 @@
 import pygame
 import random
 import math
+import pyttsx3
 import tkinter as tk
-from resources.functions import start_database,save_game_log,get_top_scores
+from resources.functions import start_database,save_game_log,get_top_scores,listen_voice
 from tkinter import messagebox
 
 pygame.mixer.pre_init(44100, -16, 2, 512) 
@@ -112,6 +113,7 @@ def jogar():
 
 # Initial screen
 def start_screen():
+    start_sound.set_volume(0.5)
     pygame.mixer.Sound.play(start_sound,loops=-1)
     while True:
         screen.blit(background_start, (0, 0)) 
@@ -145,9 +147,17 @@ def start_screen():
 
 # Instructions screen
 def show_instructions():
-    while True:
-        screen.blit(background_start, (0, 0))  
+    screen.blit(background_start, (0, 0))
+    engine = pyttsx3.init()
+    engine.setProperty('rate', 125)
+    engine.setProperty('volume', 1.0)  
+    voices = engine.getProperty('voices')
+    engine.setProperty('voice', voices[1].id)
+    engine.say("Welcome little Padawan, " + player_name + "! Press SPACE to start the game.")
+    engine.runAndWait()
 
+    while True:
+        screen.blit(background_start, (0, 0))
         instructions = [
             f"Welcome little Padawan, {player_name}!",
             "Controls:",
@@ -177,15 +187,19 @@ def check_collision(laser_pos, jedi_rect):
 
 def show_death_screen():
     pygame.mixer.Sound.play(death_sound)
-    
     save_game_log(player_name, score)
-    
     top_scores = get_top_scores(5)
     
-    waiting = True
-    while waiting:
+    # Variáveis de controle do tempo
+    time_of_death = pygame.time.get_ticks()
+    last_voice_check = time_of_death + 2000 
+    
+    while True:
+        current_time = pygame.time.get_ticks()
+        
+        # Renderiza a tela de morte IMEDIATAMENTE
         screen.blit(background_death, (0, 0))
-       
+
         # Render "GAME OVER" text
         death_text = font_death.render("GAME OVER", True, (255, 10, 0))
         text_rect = death_text.get_rect(center=(size[0]//2, 150))
@@ -207,11 +221,10 @@ def show_death_screen():
         
         for i, game in enumerate(top_scores):
             name, scr, date, time = game
-            # Convert score to string for rendering
             if i == 0:
                 color = (255, 215, 0)  # GOLD
             elif i == 1:
-                color = (white)  # SILVER (white better for visibility)
+                color = white
             elif i == 2:
                 color = (205, 127, 50)  # BRONZE
             else:
@@ -227,21 +240,33 @@ def show_death_screen():
         retry_text = font_menu.render("TRY AGAIN", True, white)
         screen.blit(retry_text, (retry_rect.x + 18, retry_rect.y + 5))
         
+        # Mostra prompt de voz só depois de 1.5 segundos
+        if current_time - time_of_death > 1500:
+            voice_prompt = font_intructions.render("Say 'YES MASTER' to try again", True, (0, 255, 255))
+            screen.blit(voice_prompt, (size[0]//2 - voice_prompt.get_width()//2, 580))
+        
         pygame.display.update()
         
+        # Verificação de voz só após 2 segundos
+        if current_time > last_voice_check:
+            if listen_voice(activator=("yes master", "try again")):
+                return True
+            last_voice_check = current_time + 2000
+        
+        # Controles normais 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                pygame.quit()
-                quit()
+                return False
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if retry_rect.collidepoint(event.pos):
                     return True
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_ESCAPE:
                     return False
-
-    return False
-
+                if event.key == pygame.K_SPACE: 
+                    return True
+        
+        clock.tick(30)
 
 # Initialize game objects
 death_star_width = 150
@@ -290,7 +315,9 @@ pygame.mixer.stop()
 pygame.mixer.Sound.play(battle_sound, loops=-1)
 
 last_shot_time = pygame.time.get_ticks() + 3000  
-
+# adjust volume 
+game_pause_sound.set_volume(1.0) 
+battle_sound.set_volume(0.6)
 # Main game loop
 running = True
 while running:

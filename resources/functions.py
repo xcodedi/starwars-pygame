@@ -1,5 +1,6 @@
 import os
 import datetime
+import speech_recognition as sr
 
 def clear_screen():
  os.system('cls' if os.name == 'nt' else 'clear')
@@ -44,3 +45,28 @@ def get_top_scores(limit=5):
     except Exception as e:
         print(f"Erro ao ler ranking: {e}")
         return []
+    
+def listen_voice(activator=("yes master", "try again"), timeout=3):
+    recognizer = sr.Recognizer()
+    try:
+        with sr.Microphone() as source:
+            print(f"Listening for: {activator}...")
+            recognizer.adjust_for_ambient_noise(source, duration=0.5)
+            audio = recognizer.listen(source, timeout=timeout, phrase_time_limit=timeout)
+            
+        phrase = recognizer.recognize_google(audio, language="en").lower()
+        print("You said:", phrase)
+        for trigger in activator:
+            if trigger in phrase:
+                return True
+        return False
+        
+    except sr.WaitTimeoutError:
+        print("No speech detected within timeout period.")
+        return False
+    except sr.UnknownValueError:
+        print("Could not understand audio.")
+        return False
+    except Exception as e:
+        print(f"Error in voice recognition: {e}")
+        return False
