@@ -1,5 +1,6 @@
 import os
 import datetime
+import pygame
 import speech_recognition as sr
 
 def clear_screen():
@@ -13,6 +14,18 @@ def start_database():
         print("Criando banco de dados...")
         with open("log.dat", "w") as f:
             pass
+
+def draw_button(screen, rect, color, text, font, text_color, border_radius=12, padding=10):
+    
+    pygame.draw.rect(screen, color, rect, border_radius=border_radius)
+    
+    text_surface = font.render(text, True, text_color)
+    
+    text_rect = text_surface.get_rect(center=rect.center)
+    
+    screen.blit(text_surface, text_rect)
+    
+    return rect
 
 def save_game_log(player_name, score):
     now = datetime.datetime.now()
@@ -58,7 +71,10 @@ def listen_voice(activator=("yes master", "try again"), timeout=3):
         print("You said:", phrase)
         for trigger in activator:
             if trigger in phrase:
+                print("Voice command recognized!")
                 return True
+        
+        print("Voice command not recognized.")
         return False
         
     except sr.WaitTimeoutError:

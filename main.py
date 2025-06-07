@@ -3,7 +3,7 @@ import random
 import math
 import pyttsx3
 import tkinter as tk
-from resources.functions import start_database,save_game_log,get_top_scores,listen_voice
+from resources.functions import start_database,save_game_log,get_top_scores,listen_voice,draw_button
 from tkinter import messagebox
 
 pygame.mixer.pre_init(44100, -16, 2, 512) 
@@ -115,20 +115,18 @@ def jogar():
 def start_screen():
     start_sound.set_volume(0.5)
     pygame.mixer.Sound.play(start_sound,loops=-1)
+
+    start_rect = pygame.Rect(90, 250, 300, 60)
+    exit_rect = pygame.Rect(90, 350, 300, 60)
+    
     while True:
         screen.blit(background_start, (0, 0)) 
         
         # Box "Start Game"
-        start_rect = pygame.Rect(90, 250, 300, 60)
-        pygame.draw.rect(screen, (0, 255, 255), start_rect, border_radius=12)
-        start_text = font_menu.render("Start Game", True, white)
-        screen.blit(start_text, (start_rect.x + 70, start_rect.y + 10))
+        draw_button(screen, start_rect, (0, 255, 255), "Start Game", font_menu, white)
 
         # Box "Exit"
-        exit_rect = pygame.Rect(90, 350, 300, 60)
-        pygame.draw.rect(screen, black, exit_rect, border_radius=12)
-        exit_text = font_menu.render("Exit Game", True, white)
-        screen.blit(exit_text, (exit_rect.x + 80, exit_rect.y + 10))
+        draw_button(screen, exit_rect, black, "Exit Game", font_menu, white)
 
         pygame.display.update()
 
@@ -192,7 +190,7 @@ def show_death_screen():
     
     # Variáveis de controle do tempo
     time_of_death = pygame.time.get_ticks()
-    last_voice_check = time_of_death + 2000 
+    last_voice_check = time_of_death + 2000
     
     while True:
         current_time = pygame.time.get_ticks()
@@ -241,15 +239,16 @@ def show_death_screen():
         screen.blit(retry_text, (retry_rect.x + 18, retry_rect.y + 5))
         
         # Mostra prompt de voz só depois de 1.5 segundos
-        if current_time - time_of_death > 1500:
-            voice_prompt = font_intructions.render("Say 'YES MASTER' to try again", True, (0, 255, 255))
+        if current_time - time_of_death > 500:
+            voice_prompt = font_intructions.render("You can Say 'YES MASTER' to try again", True, (0, 255, 255))
             screen.blit(voice_prompt, (size[0]//2 - voice_prompt.get_width()//2, 580))
         
         pygame.display.update()
         
-        # Verificação de voz só após 2 segundos
+       # Verificação de voz só após 2 segundos
         if current_time > last_voice_check:
-            if listen_voice(activator=("yes master", "try again")):
+            voice_detected = listen_voice(activator=("yes master", "try again"))
+            if voice_detected:
                 return True
             last_voice_check = current_time + 2000
         
