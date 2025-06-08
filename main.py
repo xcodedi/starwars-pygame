@@ -179,8 +179,10 @@ def show_instructions():
                 if event.key == pygame.K_SPACE:
                     return
 
-def check_collision(laser_pos, jedi_rect):
-    laser_rect = pygame.Rect(laser_pos[0], laser_pos[1], laser_width, laser_height)
+def check_collision(laser_pos, jedi_rect, laser_width, laser_height):
+    width = max(1, laser_width - 13)
+    height = max(1, laser_height - 24)
+    laser_rect = pygame.Rect(laser_pos[0], laser_pos[1], width, height)
     return laser_rect.colliderect(jedi_rect)
 
 def show_death_screen():
@@ -298,7 +300,7 @@ laser_width = 10
 laser_height = 130
 laser = pygame.transform.scale(laser, (laser_width, laser_height))
 laser_villain = []
-laser_speed = 15
+laser_speed = 2
 
 position_random_animation_X = 800
 position_random_animation_Y = 0
@@ -409,7 +411,7 @@ while running:
         screen.blit(laser, (laser_pos[0], laser_pos[1]))
 
         # Check collision
-        if check_collision(laser_pos, jedi_rect):
+        if check_collision(laser_pos, jedi_rect, laser_width, laser_height):
             pygame.mixer.stop()
             if show_death_screen():
                 # Reset game state
