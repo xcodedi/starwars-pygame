@@ -1,15 +1,18 @@
+# Import required libraries
 import pygame
 import random
 import math
 import tkinter as tk
-from resources.functions import start_database,save_game_log,get_top_scores,listen_voice,draw_button
+from resources.functions import start_database, save_game_log, get_top_scores, listen_voice, draw_button
 from resources.voice_helper import speak_instructions
 from tkinter import messagebox
 
-pygame.mixer.pre_init(44100, -16, 2, 512) 
+# Initialize pygame mixer for better sound quality
+pygame.mixer.pre_init(44100, -16, 2, 512)
 pygame.init()
-start_database()
+start_database()  # Initialize the game database (log file)
 
+# Set up the game window
 size = (1000, 700)
 clock = pygame.time.Clock()
 screen = pygame.display.set_mode(size)
@@ -22,13 +25,13 @@ try:
 except:
     print("Could not load game icon")
 
-# Colors
+# Define colors
 white = (255, 255, 255)
 black = (0, 0, 0)
 
-# Load images
+# Load images and scale them to fit the screen
 try:
-    background_start = pygame.image.load("assets/background-start.jpg") 
+    background_start = pygame.image.load("assets/background-start.jpg")
     background_battle = pygame.image.load("assets/background-battle.jpg")
     death_star = pygame.image.load("assets/death-star.png")
     galactic_empire_icon = pygame.image.load("assets/galactic-empire-icon.png")
@@ -39,7 +42,7 @@ try:
     random_animation = pygame.image.load("assets/x-wing.png")
     background_death = pygame.image.load("assets/background-death-2.jpg")
     
-    # Scale images
+    # Scale images to fit the window
     background_start = pygame.transform.scale(background_start, size)
     background_battle = pygame.transform.scale(background_battle, size)
     background_death = pygame.transform.scale(background_death, size)
@@ -48,9 +51,9 @@ except Exception as e:
     pygame.quit()
     exit()
 
-# Load sounds
+# Load sound effects and music
 try:
-    start_sound = pygame.mixer.Sound("assets/march-of-the-troopers.mp3")  
+    start_sound = pygame.mixer.Sound("assets/march-of-the-troopers.mp3")
     battle_sound = pygame.mixer.Sound("assets/starwars-style.mp3")
     laser_sound = pygame.mixer.Sound("assets/shot-ship.mp3")
     shield_sound = pygame.mixer.Sound("assets/shield.mp3")
@@ -60,7 +63,7 @@ try:
 except:
     print("Could not load some sounds")
 
-# Load fonts
+# Load fonts for different UI elements
 try:
     font_menu = pygame.font.SysFont("comicsansms", 30)
     font_death = pygame.font.SysFont("comicsansms", 40)
@@ -72,13 +75,13 @@ except:
 
 # Game variables
 score = 0
-player_name = "Player"  # Default name
+player_name = "Player"  # Default player name
 paused = False
 
-# set name of player 
+# Function to get the player's name using a Tkinter window
 def jogar():
     global player_name
-    
+
     def get_name():
         global player_name
         player_name = entry_player_name.get()
@@ -90,7 +93,7 @@ def jogar():
     root = tk.Tk()
     root.title("Enter with your name")
     
-    # Center window
+    # Center the window on the screen
     window_width = 300
     window_height = 150
     screen_width = root.winfo_screenwidth()
@@ -111,21 +114,21 @@ def jogar():
     
     root.mainloop()
 
-# Initial screen
+# Initial screen function
 def start_screen():
     start_sound.set_volume(0.5)
-    pygame.mixer.Sound.play(start_sound,loops=-1)
+    pygame.mixer.Sound.play(start_sound, loops=-1)
 
     start_rect = pygame.Rect(90, 250, 300, 60)
     exit_rect = pygame.Rect(90, 350, 300, 60)
     
     while True:
-        screen.blit(background_start, (0, 0)) 
+        screen.blit(background_start, (0, 0))
         
-        # Box "Start Game"
+        # Draw "Start Game" button
         draw_button(screen, start_rect, (0, 255, 255), "Start Game", font_menu, white)
 
-        # Box "Exit"
+        # Draw "Exit Game" button
         draw_button(screen, exit_rect, black, "Exit Game", font_menu, white)
 
         pygame.display.update()
@@ -136,16 +139,16 @@ def start_screen():
                 quit()
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 if start_rect.collidepoint(event.pos):
-                    jogar()             
-                    show_instructions() 
-                    return              
+                    jogar()
+                    show_instructions()
+                    return
                 elif exit_rect.collidepoint(event.pos):
                     pygame.quit()
                     quit()
 
-# Instructions screen
+# Instructions screen function
 def show_instructions():
-    speak_instructions(player_name)
+    speak_instructions(player_name)  # Speak instructions using pyttsx3 in a thread
     while True:
         screen.blit(background_start, (0, 0))
         instructions = [
@@ -177,43 +180,42 @@ def show_instructions():
                 if event.key == pygame.K_SPACE:
                     return
 
+# Function to check collision between a laser and the Jedi
 def check_collision(laser_pos, jedi_rect, laser_width, laser_height):
     width = max(1, laser_width - 13)
     height = max(1, laser_height - 24)
     laser_rect = pygame.Rect(laser_pos[0], laser_pos[1], width, height)
     return laser_rect.colliderect(jedi_rect)
 
+# Function to show the death screen and handle retry logic
 def show_death_screen():
     pygame.mixer.Sound.play(death_sound)
     save_game_log(player_name, score)
     top_scores = get_top_scores(5)
     
-    # Variáveis de controle do tempo
+    # Timing variables for voice prompt
     time_of_death = pygame.time.get_ticks()
     last_voice_check = time_of_death + 2000
     
     while True:
         current_time = pygame.time.get_ticks()
         
-        # Renderiza a tela de morte IMEDIATAMENTE
+        # Draw death screen background
         screen.blit(background_death, (0, 0))
 
-        # Render "GAME OVER" text
+        # Draw "GAME OVER" text with black outline
         death_text = font_death.render("GAME OVER", True, (255, 10, 0))
         text_rect = death_text.get_rect(center=(size[0]//2, 150))
-        
-        # Draw black outline
         for offset in [(-1,-1), (1,-1), (-1,1), (1,1)]:
             screen.blit(font_death.render("GAME OVER", True, black), 
                        (text_rect.x + offset[0], text_rect.y + offset[1]))
-        
         screen.blit(death_text, text_rect)
         
-        # Score text
+        # Show player score
         score_text = font_score.render(f"Player: {player_name} - Score: {score}", True, white)
         screen.blit(score_text, (size[0]//2 - score_text.get_width()//2, 180))
         
-        # Render top scores
+        # Show top 5 scores
         rank_title = font_menu.render("TOP 5 SCORES", True, (0, 255, 255))
         screen.blit(rank_title, (size[0]//2 - rank_title.get_width()//2, 250))
         
@@ -231,28 +233,28 @@ def show_death_screen():
             game_text = font_intructions.render(f"{i+1}. {name}: {scr} - {date} {time}", True, color)
             screen.blit(game_text, (size[0]//2 - game_text.get_width()//2, 300 + i * 35))
         
-        # Retry button
+        # Draw "TRY AGAIN" button
         retry_rect = pygame.Rect(size[0]//2 - 100, 510, 200, 50)
         pygame.draw.rect(screen, black, retry_rect.inflate(10, 10), border_radius=15)
         pygame.draw.rect(screen, (0, 255, 255), retry_rect, border_radius=10)
         retry_text = font_menu.render("TRY AGAIN", True, white)
         screen.blit(retry_text, (retry_rect.x + 18, retry_rect.y + 5))
         
-        # Mostra prompt de voz só depois de 1.5 segundos
+        # Show voice prompt after 0.5 seconds
         if current_time - time_of_death > 500:
             voice_prompt = font_intructions.render("You can Say 'YES MASTER' to try again", True, (0, 255, 255))
             screen.blit(voice_prompt, (size[0]//2 - voice_prompt.get_width()//2, 580))
         
         pygame.display.update()
         
-       # Verificação de voz só após 2 segundos
+        # Voice check only after 2 seconds
         if current_time > last_voice_check:
             voice_detected = listen_voice(activator=("yes master", "try again"))
             if voice_detected:
                 return True
             last_voice_check = current_time + 2000
         
-        # Controles normais 
+        # Handle normal controls
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 return False
@@ -262,12 +264,12 @@ def show_death_screen():
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_ESCAPE:
                     return False
-                if event.key == pygame.K_SPACE: 
+                if event.key == pygame.K_SPACE:
                     return True
         
         clock.tick(30)
 
-# Initialize game objects
+# Initialize game objects and their properties
 death_star_width = 150
 death_star_height = 100
 death_star = pygame.transform.scale(death_star, (death_star_width, death_star_height))
@@ -279,7 +281,7 @@ death_star_max_scale = 1.0
 position_death_star_X = 860
 position_death_star_Y = 5
 
-jedi_width = 125  
+jedi_width = 125
 jedi_height = 200
 jedi = pygame.transform.scale(jedi, (jedi_width, jedi_height))
 position_jedi_X = (size[0] // 2) - (jedi_width // 2)
@@ -303,24 +305,25 @@ laser_speed = 15
 position_random_animation_X = 800
 position_random_animation_Y = 0
 x_wing_randon = []
-x_wing_speed = 5 
+x_wing_speed = 5
 next_xwing_time = pygame.time.get_ticks() + 10000
 position_shield_X = position_jedi_X + 20
 position_shield_Y = position_jedi_Y - 50
 
-# Start the game
-start_screen() 
+# Start the game: show start screen, then play battle music
+start_screen()
 pygame.mixer.stop()
 pygame.mixer.Sound.play(battle_sound, loops=-1)
 
-last_shot_time = pygame.time.get_ticks() + 3000  
-# adjust volume 
-game_pause_sound.set_volume(1.0) 
+last_shot_time = pygame.time.get_ticks() + 3000
+# Adjust volumes
+game_pause_sound.set_volume(1.0)
 battle_sound.set_volume(0.6)
+
 # Main game loop
 running = True
 while running:
-    # Event handling
+    # Handle events
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
@@ -337,13 +340,14 @@ while running:
                     pygame.mixer.Sound.play(game_pause_sound)
                 else:
                     pygame.mixer.Sound.stop(game_pause_sound)
-                    pygame.mixer.Sound.play(battle_sound, loops=-1)        
+                    pygame.mixer.Sound.play(battle_sound, loops=-1)
         if event.type == pygame.KEYUP:
             if event.key == pygame.K_RIGHT and movement_jedi_X > 0:
                 movement_jedi_X = 0
             elif event.key == pygame.K_LEFT and movement_jedi_X < 0:
                 movement_jedi_X = 0
     
+    # Pause logic
     if paused:
         pause_text = font_menu.render("GAME PAUSED", True, (0, 255, 255))
         screen.blit(pause_text, (size[0]//2 - pause_text.get_width()//2, size[1]//2))
@@ -352,10 +356,11 @@ while running:
         continue
 
     # Game logic
-    # Update Death Star animation
+
+    # Animate Death Star (scaling effect)
     death_star_scale += scale_direction
     if death_star_scale <= death_star_min_scale or death_star_scale >= death_star_max_scale:
-        scale_direction *= -1  
+        scale_direction *= -1
 
     current_width = int(death_star_width * death_star_scale)
     current_height = int(death_star_height * death_star_scale)
@@ -367,7 +372,7 @@ while running:
     position_jedi_X += movement_jedi_X
     position_jedi_X = max(-5, min(895, position_jedi_X))
 
-    # Update Villain movement
+    # Update Villain movement and direction randomly
     villain_direction_change_timer += 1
     if villain_direction_change_timer > 60:
         villain_speed = random.choice([-15, -10, -5, 5, 10, 15])
@@ -381,38 +386,38 @@ while running:
         position_villain_X = size[0] - villain_width
         villain_speed *= -1
 
-    # Villain shooting
+    # Villain shooting logic
     current_time = pygame.time.get_ticks()
     if current_time - last_shot_time > 1500:
         position_laser_X = position_villain_X + villain_width // 2 - laser_width // 2
         position_laser_Y = position_villain_Y + villain_height - 100
-        angle = random.uniform(-0.5, 0.5)  
+        angle = random.uniform(-0.5, 0.5)
         dx = laser_speed * math.sin(angle)
         dy = laser_speed * math.cos(angle)
         laser_villain.append([position_laser_X, position_laser_Y, dx, dy])
         pygame.mixer.Sound.play(laser_sound)
-        last_shot_time = current_time 
+        last_shot_time = current_time
 
-    # Drawing
+    # Drawing section
     screen.blit(background_battle, (0, 0))
     screen.blit(scaled_death_star, (position_death_star_X + offset_x, position_death_star_Y + offset_y))
     screen.blit(jedi, (position_jedi_X, position_jedi_Y))
     screen.blit(villain, (position_villain_X, position_villain_Y))
 
-    # Collision detection
+    # Collision detection for Jedi
     jedi_rect = pygame.Rect(position_jedi_X, position_jedi_Y, jedi_width, jedi_height)
 
-    # Update and draw lasers
+    # Update and draw villain lasers
     for laser_pos in laser_villain[:]:
-        laser_pos[0] += laser_pos[2]  
-        laser_pos[1] += laser_pos[3] 
+        laser_pos[0] += laser_pos[2]
+        laser_pos[1] += laser_pos[3]
         screen.blit(laser, (laser_pos[0], laser_pos[1]))
 
-        # Check collision
+        # Check collision with Jedi
         if check_collision(laser_pos, jedi_rect, laser_width, laser_height):
             pygame.mixer.stop()
             if show_death_screen():
-                # Reset game state
+                # Reset game state if player retries
                 position_jedi_X = (size[0] // 2) - (jedi_width // 2)
                 position_villain_X = (size[0] // 2) - (villain_width // 2)
                 laser_villain = []
@@ -422,16 +427,16 @@ while running:
             else:
                 running = False
             break
-        
-        # Remove lasers that go off screen
+
+        # Remove lasers that go off screen and increase score
         if laser_pos[1] > size[1]:
             laser_villain.remove(laser_pos)
             score += 1
 
-    # Display score
+    # Display score on the screen
     score_text = font_score.render(f"Score: {score}", True, white)
     screen.blit(score_text, (10, 10))
-    #Display pause message
+    # Display pause message
     pause_mensage = font_pause_mensage.render("Press SPACE to pause GAME", True, (128, 128, 128))
     screen.blit(pause_mensage, (10, 50))
 
@@ -452,9 +457,9 @@ while running:
         dx = (distance_x / distance) * speed
         dy = (distance_y / distance) * speed
 
-        # Create X-Wing image
+        # Create X-Wing image with transparency
         xwing_img = pygame.transform.scale(random_animation, (100, 100)).convert_alpha()
-        xwing_img.set_alpha(110) 
+        xwing_img.set_alpha(110)
 
         x_wing_randon.append({
             'x': start_x,
@@ -463,21 +468,20 @@ while running:
             'dy': dy,
             'image': xwing_img
         })
-        pygame.mixer.Sound.play(x_wing_sound)  
+        pygame.mixer.Sound.play(x_wing_sound)
         next_xwing_time = current_time + random.randint(5000, 15000)
 
-    # Draw X-Wing animations
+    # Draw X-Wing animations and update their positions
     for xwing in x_wing_randon[:]:
         xwing['x'] += xwing['dx']
         xwing['y'] += xwing['dy']
         screen.blit(xwing['image'], (xwing['x'], xwing['y']))
-        
 
+        # Remove X-Wing if it goes off screen
         if xwing['x'] > size[0] + 50 or xwing['y'] < -150:
             x_wing_randon.remove(xwing)
 
-    
     pygame.display.update()
-    clock.tick(60)
+    clock.tick(60)  # Limit the frame rate to 60 FPS
 
-pygame.quit()
+pygame.quit()  # Quit the game when the loop ends
