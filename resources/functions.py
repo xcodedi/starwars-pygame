@@ -3,9 +3,11 @@ import datetime
 import pygame
 import speech_recognition as sr
 
+# Function to clear the console screen
 def clear_screen():
  os.system('cls' if os.name == 'nt' else 'clear')
 
+# Function to start the database by creating a log file if it doesn't exist
 def start_database():
     try: 
         with open("log.dat", "r") as f:
@@ -14,7 +16,7 @@ def start_database():
         print("Criando banco de dados...")
         with open("log.dat", "w") as f:
             pass
-
+# Function to draw a button on the screen
 def draw_button(screen, rect, color, text, font, text_color, border_radius=12, padding=10):
     
     pygame.draw.rect(screen, color, rect, border_radius=border_radius)
@@ -26,7 +28,7 @@ def draw_button(screen, rect, color, text, font, text_color, border_radius=12, p
     screen.blit(text_surface, text_rect)
     
     return rect
-
+# Function to save the game log with player name, score, date, and time
 def save_game_log(player_name, score):
     now = datetime.datetime.now()
     date_str = now.strftime("%Y-%m-%d")
@@ -34,7 +36,7 @@ def save_game_log(player_name, score):
     
     with open("log.dat", "a") as file:
         file.write(f"{player_name},{score},{date_str},{time_str}\n")
-
+# Function to get the top scores from the log file
 def get_top_scores(limit=5):
     try:
         with open("log.dat", "r") as file:
@@ -58,7 +60,7 @@ def get_top_scores(limit=5):
     except Exception as e:
         print(f"Erro ao ler ranking: {e}")
         return []
-    
+# Function to listen for a voice command and return True if recognized, False otherwise
 def listen_voice(activator=("yes master", "try again"), timeout=3):
     recognizer = sr.Recognizer()
     try:

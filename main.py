@@ -1,9 +1,9 @@
 import pygame
 import random
 import math
-import pyttsx3
 import tkinter as tk
 from resources.functions import start_database,save_game_log,get_top_scores,listen_voice,draw_button
+from resources.voice_helper import speak_instructions
 from tkinter import messagebox
 
 pygame.mixer.pre_init(44100, -16, 2, 512) 
@@ -145,15 +145,7 @@ def start_screen():
 
 # Instructions screen
 def show_instructions():
-    screen.blit(background_start, (0, 0))
-    engine = pyttsx3.init()
-    engine.setProperty('rate', 125)
-    engine.setProperty('volume', 1.0)  
-    voices = engine.getProperty('voices')
-    engine.setProperty('voice', voices[1].id)
-    engine.say("Welcome little Padawan, " + player_name + "! Press SPACE to start the game.")
-    engine.runAndWait()
-
+    speak_instructions(player_name)
     while True:
         screen.blit(background_start, (0, 0))
         instructions = [
@@ -300,7 +292,7 @@ laser_width = 10
 laser_height = 130
 laser = pygame.transform.scale(laser, (laser_width, laser_height))
 laser_villain = []
-laser_speed = 2
+laser_speed = 15
 
 position_random_animation_X = 800
 position_random_animation_Y = 0
