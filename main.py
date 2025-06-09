@@ -153,13 +153,19 @@ def show_instructions():
             "Controls:",
             "← = Move Left",
             "→ = Move Right",
+            "",
             "SPACE = Pause Game",
             "Press SPACE to start the game",
+            "",
+            "Objectives:",
+            "- Survive as long as possible.",
+            "- Dodge enemy lasers.",
+            "- Score points by surviving and dodging.",
+            "- Try to reach the top 5 ranking!"
         ]
-
         for i, line in enumerate(instructions):
             text = font_intructions.render(line, True, white)
-            screen.blit(text, (50, 250 + i * 40))
+            screen.blit(text, (50, 150 + i * 40))
 
         pygame.display.update()
 
