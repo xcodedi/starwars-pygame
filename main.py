@@ -5,6 +5,7 @@ import math
 import tkinter as tk
 from resources.functions import start_database, save_game_log, get_top_scores, listen_voice, draw_button
 from resources.voice_helper import speak_instructions
+from resources.resources_path import resource_path
 from tkinter import messagebox
 
 # Initialize pygame mixer for better sound quality
@@ -20,7 +21,7 @@ pygame.display.set_caption("StarWars Game")
 
 # Load the game icon
 try:
-    game_icon = pygame.image.load("assets/game-icon.jpg")
+    game_icon = pygame.image.load(resource_path("assets/game-icon.jpg"))
     pygame.display.set_icon(game_icon)
 except:
     print("Could not load game icon")
@@ -31,14 +32,14 @@ black = (0, 0, 0)
 
 # Load images and scale them to fit the screen
 try:
-    background_start = pygame.image.load("assets/background-start.jpg")
-    background_battle = pygame.image.load("assets/background-battle.jpg")
-    death_star = pygame.image.load("assets/death-star.png")
-    jedi = pygame.image.load("assets/jedi.png")
-    villain = pygame.image.load("assets/ship-ti.png")
-    laser = pygame.image.load("assets/laser.png")
-    random_animation = pygame.image.load("assets/x-wing.png")
-    background_death = pygame.image.load("assets/background-death-2.jpg")
+    background_start = pygame.image.load(resource_path("assets/background-start.jpg"))
+    background_battle = pygame.image.load(resource_path("assets/background-battle.jpg"))
+    death_star = pygame.image.load(resource_path("assets/death-star.png"))
+    jedi = pygame.image.load(resource_path("assets/jedi.png"))
+    villain = pygame.image.load(resource_path("assets/ship-ti.png"))
+    laser = pygame.image.load(resource_path("assets/laser.png"))
+    random_animation = pygame.image.load(resource_path("assets/x-wing.png"))
+    background_death = pygame.image.load(resource_path("assets/background-death-2.jpg"))
     
     # Scale images to fit the window
     background_start = pygame.transform.scale(background_start, size)
@@ -51,12 +52,12 @@ except Exception as e:
 
 # Load sound effects and music
 try:
-    start_sound = pygame.mixer.Sound("assets/march-of-the-troopers.mp3")
-    battle_sound = pygame.mixer.Sound("assets/starwars-style.mp3")
-    laser_sound = pygame.mixer.Sound("assets/shot-ship.mp3")
-    game_pause_sound = pygame.mixer.Sound("assets/game-paused-darthvader.wav")
-    death_sound = pygame.mixer.Sound("assets/kylo.mp3")
-    x_wing_sound = pygame.mixer.Sound("assets/x-wings-fly.mp3")
+    start_sound = pygame.mixer.Sound(resource_path("assets/march-of-the-troopers.mp3"))
+    battle_sound = pygame.mixer.Sound(resource_path("assets/starwars-style.mp3"))
+    laser_sound = pygame.mixer.Sound(resource_path("assets/shot-ship.mp3"))
+    game_pause_sound = pygame.mixer.Sound(resource_path("assets/game-paused-darthvader.wav"))
+    death_sound = pygame.mixer.Sound(resource_path("assets/kylo.mp3"))
+    x_wing_sound = pygame.mixer.Sound(resource_path("assets/x-wings-fly.mp3"))
 except:
     print("Could not load some sounds")
 
