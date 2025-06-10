@@ -45,4 +45,7 @@ This game is a non-profit fan project and **has no official affiliation with Luc
 - Game Tester: João Vitor Pereira Poter  
 - RA: 118038
 
+- Game Tester: Talysson da Costa
+- RA: 1138376
+
 ## 🚀 May the Force be with you, young Padawan!
